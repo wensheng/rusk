@@ -1,0 +1,63 @@
+# Example Rusk configuration file
+# This demonstrates basic task definitions
+
+name: hello-example
+usage: A simple hello world example
+
+tasks:
+  # Simple task with a string command
+  hello:
+    usage: Say hello to the world
+    run: echo "Hello, World!"
+
+  # Task with options
+  greet:
+    usage: Greet someone by name
+    options:
+      name:
+        usage: Name of person to greet
+        default: World
+      greeting:
+        usage: Greeting to use
+        default: Hello
+    run: echo "${greeting}, ${name}!"
+
+  # Task with multiple run items
+  build:
+    usage: Build the project
+    options:
+      release:
+        usage: Build in release mode
+        type: bool
+        short: r
+    run:
+      - echo "Starting build..."
+      - command: cargo build
+        when:
+          - equal:
+              left: "${release}"
+              right: "false"
+      - command: cargo build --release
+        when:
+          - equal:
+              left: "${release}"
+              right: "true"
+      - echo "Build complete!"
+
+  # Task with finally block
+  test:
+    usage: Run tests with cleanup
+    run:
+      - echo "Running tests..."
+      - cargo test
+    finally:
+      - echo "Cleaning up test artifacts..."
+      - rm -rf tmp/
+
+  # Task that calls other tasks
+  all:
+    usage: Run all tasks
+    run:
+      - task: hello
+      - task: build
+      - task: test
